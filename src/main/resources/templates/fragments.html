@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:if="${_csrf}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf}" th:content="${_csrf.headerName}">
+    <title th:text="${title} + ' | Casino'">Casino</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header th:fragment="header" class="topbar">
+    <div class="topbar-inner">
+        <a class="logo" th:href="@{/}">🎰 Casino</a>
+        <nav>
+            <a th:href="@{/}">Ігри</a>
+            <th:block th:if="${me}">
+                <a th:href="@{/wallet}">Гаманець</a>
+                <a th:href="@{/history}">Історія</a>
+                <a th:if="${me.admin}" th:href="@{/admin}">Адмінка</a>
+                <span class="balance">Баланс: <b id="balance" th:text="${#numbers.formatDecimal(balance, 1, 2, 'POINT')}">0.00</b></span>
+                <span class="user" th:text="${me.username}">user</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="link">Вийти</button>
+                </form>
+            </th:block>
+            <th:block th:unless="${me}">
+                <a th:href="@{/login}">Увійти</a>
+                <a th:href="@{/register}" class="btn small">Реєстрація</a>
+            </th:block>
+        </nav>
+    </div>
+</header>
+
+<div th:fragment="flash">
+    <div class="alert error" th:if="${error}" th:text="${error}"></div>
+    <div class="alert success" th:if="${success}" th:text="${success}"></div>
+</div>
+
+<footer th:fragment="footer" class="footer">
+    Навчальний проєкт. Гроші несправжні, платежі імітуються. Грайте відповідально.
+</footer>
+</body>
+</html>

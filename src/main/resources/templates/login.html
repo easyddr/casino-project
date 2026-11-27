@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Вхід')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="container narrow auth">
+    <div class="card">
+        <h1>Вхід</h1>
+        <div class="alert error" th:if="${param.error}">Невірний логін або пароль, або акаунт заблоковано.</div>
+        <div class="alert success" th:if="${param.registered}">Реєстрація успішна, тепер увійдіть.</div>
+        <div class="alert success" th:if="${param.logout}">Ви вийшли з акаунта.</div>
+        <form th:action="@{/login}" method="post" class="form">
+            <label>Логін <input type="text" name="username" required autofocus></label>
+            <label>Пароль <input type="password" name="password" required></label>
+            <button type="submit" class="btn">Увійти</button>
+        </form>
+        <p class="small muted auth-footer">Немає акаунта? <a th:href="@{/register}">Зареєструватися</a></p>
+    </div>
+</main>
+</body>
+</html>
