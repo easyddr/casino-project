@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Історія ставок')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="container">
+    <div class="page-head">
+        <h1>Історія ставок</h1>
+        <form method="get" th:action="@{/history}" class="filter">
+            <select name="status">
+                <option value="">Усі статуси</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == status}"></option>
+            </select>
+            <button type="submit" class="btn small secondary">Фільтр</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <p class="muted" th:if="${bets.totalElements == 0}">Ставок не знайдено.</p>
+        <div class="table-wrap" th:unless="${bets.totalElements == 0}">
+            <table>
+                <thead>
+                <tr><th>#</th><th>Дата</th><th>Гра</th><th>Ставка</th><th>Виплата</th><th>Результат</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${bets.content}">
+                    <td class="muted" th:text="${b.id}"></td>
+                    <td th:text="${#temporals.format(b.createdAt, 'dd.MM HH:mm:ss')}"></td>
+                    <td th:text="${b.gameName}"></td>
+                    <td th:text="${b.amount}"></td>
+                    <td th:text="${b.payout}"></td>
+                    <td th:switch="${b.status.name()}">
+                        <span th:case="'WON'" class="badge win">Виграш</span>
+                        <span th:case="'LOST'" class="badge loss">Програш</span>
+                        <span th:case="'PLACED'" class="badge neutral">Триває</span>
+                        <span th:case="'CANCELLED'" class="badge neutral">Скасовано</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pager">
+            <a th:if="${bets.hasPrevious()}" th:href="@{/history(page=${bets.page - 1}, status=${status})}">← Назад</a>
+            <span th:text="'Сторінка ' + ${bets.page + 1} + ' з ' + ${bets.totalPages > 0 ? bets.totalPages : 1}"></span>
+            <a th:if="${bets.hasNext()}" th:href="@{/history(page=${bets.page + 1}, status=${status})}">Далі →</a>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

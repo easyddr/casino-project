@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Головна')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="container">
+    <div th:replace="~{fragments :: flash}"></div>
+
+    <h1>Ігри</h1>
+    <p class="muted" th:if="${#lists.isEmpty(games)}">Поки що немає активних ігор.</p>
+    <div class="grid">
+        <div class="card game" th:each="g : ${games}">
+            <div class="game-top">
+                <div class="game-icon" th:switch="${g.type.name()}">
+                    <span th:case="'CRYPTO'">📈</span>
+                    <span th:case="'SLOTS'">🍒</span>
+                    <span th:case="'DICE'">🎲</span>
+                    <span th:case="*">🃏</span>
+                </div>
+                <span class="badge neutral" th:text="${g.type}">TYPE</span>
+            </div>
+            <h3 th:text="${g.name}">Гра</h3>
+            <p class="muted game-desc" th:text="${g.description}">Опис</p>
+            <div class="game-footer">
+                <span class="small muted">Ставка <b class="text-main" th:text="${g.minBet}">1</b> – <b class="text-main" th:text="${g.maxBet}">100</b></span>
+                <a class="btn small" th:href="@{/play/{id}(id=${g.id})}" th:text="${me} ? 'Грати' : 'Увійти і грати'">Грати</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns">
+        <section class="card">
+            <h2>Топ виграшів</h2>
+            <div class="table-wrap" th:unless="${#lists.isEmpty(wins)}">
+                <table>
+                    <thead>
+                    <tr><th>Гравець</th><th>Гра</th><th>Ставка</th><th>Виграш</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="w : ${wins}">
+                        <td th:text="${w.username}"></td>
+                        <td th:text="${w.gameName}"></td>
+                        <td th:text="${w.amount}"></td>
+                        <td class="win" th:text="${w.payout}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="muted" th:if="${#lists.isEmpty(wins)}">Ще ніхто не виграв. Можете стати першим.</p>
+        </section>
+
+        <section class="card">
+            <h2>Акції</h2>
+            <ul class="plain">
+                <li th:each="p : ${promotions}">
+                    <code class="promo-code" th:text="${p.code}">CODE</code>
+                    <span th:text="${p.title}"></span>
+                    <span class="badge win" th:text="'+' + ${p.bonusAmount}"></span>
+                    <span class="muted small" th:if="${p.validUntil}"
+                          th:text="'до ' + ${#temporals.format(p.validUntil, 'dd.MM.yyyy')}"></span>
+                </li>
+            </ul>
+            <p class="small muted">Промокод вводиться на сторінці гаманця.</p>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

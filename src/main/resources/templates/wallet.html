@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Гаманець')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="container">
+    <div th:replace="~{fragments :: flash}"></div>
+    <h1>Гаманець</h1>
+
+    <div class="columns">
+        <section class="card">
+            <h2>Поповнити</h2>
+            <form th:action="@{/wallet/deposit}" method="post" class="form">
+                <label>Сума <input type="number" name="amount" min="1" step="0.01" value="100" required></label>
+                <label th:unless="${#lists.isEmpty(cards)}">Збережена картка
+                    <select name="savedPaymentId">
+                        <option value="">Нова картка</option>
+                        <option th:each="c : ${cards}" th:value="${c.paymentId}" th:text="${c.mask}"></option>
+                    </select>
+                </label>
+                <label>Номер картки <input type="text" name="cardNumber" placeholder="4242 4242 4242 4242" autocomplete="cc-number"></label>
+                <label>Власник <input type="text" name="cardHolder" placeholder="IVAN PETRENKO" autocomplete="cc-name"></label>
+                <div class="row">
+                    <label>Місяць <input type="number" name="expMonth" min="1" max="12" placeholder="12"></label>
+                    <label>Рік <input type="number" name="expYear" min="2024" max="2100" placeholder="2030"></label>
+                    <label>CVV <input type="password" name="cvv" maxlength="4" placeholder="123" required autocomplete="cc-csc"></label>
+                </div>
+                <button type="submit" class="btn">Поповнити</button>
+                <p class="small muted">Тестові картки: 4242 4242 4242 4242 проходить, 4000 0000 0000 0002 відхиляється,
+                    4000 0000 0000 0119 імітує збій шлюзу.</p>
+            </form>
+        </section>
+
+        <div class="stack">
+            <section class="card">
+                <h2>Вивести</h2>
+                <form th:action="@{/wallet/withdraw}" method="post" class="form">
+                    <label>Сума <input type="number" name="amount" min="1" step="0.01" required></label>
+                    <label th:unless="${#lists.isEmpty(cards)}">Картка
+                        <select name="savedPaymentId">
+                            <option value="">Інша картка</option>
+                            <option th:each="c : ${cards}" th:value="${c.paymentId}" th:text="${c.mask}"></option>
+                        </select>
+                    </label>
+                    <label>Номер картки <input type="text" name="cardNumber" placeholder="якщо не обрали збережену"></label>
+                    <button type="submit" class="btn secondary">Вивести</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Промокод</h2>
+                <form th:action="@{/wallet/promo}" method="post" class="row">
+                    <input type="text" name="code" placeholder="WELCOME50" required>
+                    <button type="submit" class="btn">Активувати</button>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <section class="card">
+        <h2>Останні платежі</h2>
+        <p class="muted" th:if="${#lists.isEmpty(payments)}">Платежів ще не було.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(payments)}">
+            <table>
+                <thead>
+                <tr><th>Дата</th><th>Тип</th><th>Сума</th><th>Картка</th><th>Статус</th><th>Деталі</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${payments}">
+                    <td th:text="${#temporals.format(p.createdAt, 'dd.MM HH:mm')}"></td>
+                    <td th:text="${p.type.name() == 'DEPOSIT'} ? 'Поповнення' : 'Виведення'"></td>
+                    <td th:text="${p.amount}"></td>
+                    <td th:text="${p.cardMask}"></td>
+                    <td>
+                            <span class="badge"
+                                  th:classappend="${p.status.name() == 'SUCCESS'} ? 'win' : (${p.status.name() == 'FAILED'} ? 'loss' : 'neutral')"
+                                  th:text="${p.status}"></span>
+                    </td>
+                    <td class="small muted" th:text="${p.errorMessage} ?: ${p.providerRef}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Журнал транзакцій</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th>Дата</th><th>Тип</th><th>Сума</th><th>Баланс після</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${transactions.content}">
+                    <td th:text="${#temporals.format(t.createdAt, 'dd.MM HH:mm:ss')}"></td>
+                    <td><span class="badge neutral" th:text="${t.type}"></span></td>
+                    <td th:classappend="${t.type.name() == 'BET' or t.type.name() == 'WITHDRAWAL'} ? 'loss' : 'win'"
+                        th:text="(${t.type.name() == 'BET' or t.type.name() == 'WITHDRAWAL'} ? '-' : '+') + ${t.amount}"></td>
+                    <td th:text="${t.balanceAfter}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pager">
+            <a th:if="${transactions.hasPrevious()}" th:href="@{/wallet(page=${transactions.page - 1})}">← Новіші</a>
+            <span th:text="'Сторінка ' + ${transactions.page + 1} + ' з ' + ${transactions.totalPages > 0 ? transactions.totalPages : 1}"></span>
+            <a th:if="${transactions.hasNext()}" th:href="@{/wallet(page=${transactions.page + 1})}">Старіші →</a>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

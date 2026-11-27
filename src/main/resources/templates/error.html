@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Помилка</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="container narrow auth">
+    <div class="card center">
+        <h1 th:text="${status} ?: 'Помилка'">Помилка</h1>
+        <p class="muted" th:switch="${status}">
+            <span th:case="404">Сторінку не знайдено.</span>
+            <span th:case="403">Доступ заборонено.</span>
+            <span th:case="*">Щось пішло не так. Спробуйте ще раз пізніше.</span>
+        </p>
+        <a class="btn" th:href="@{/}">На головну</a>
+    </div>
+</main>
+</body>
+</html>

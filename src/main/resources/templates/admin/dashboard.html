@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Адмінка')}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="container">
+    <div th:replace="~{fragments :: flash}"></div>
+    <h1>Адмінка</h1>
+
+    <div class="stats">
+        <div class="card stat"><span>Банк казино</span><b th:text="${stats.houseBank}"></b></div>
+        <div class="card stat"><span>Макс. виграш зараз</span><b th:text="${maxWin}"></b></div>
+        <div class="card stat"><span>Баланси гравців</span><b th:text="${stats.playersBalance}"></b></div>
+        <div class="card stat"><span>Поповнення</span><b th:text="${stats.totalDeposits}"></b></div>
+        <div class="card stat"><span>Виведення</span><b th:text="${stats.totalWithdrawals}"></b></div>
+        <div class="card stat"><span>Бонуси</span><b th:text="${stats.totalBonuses}"></b></div>
+    </div>
+
+    <section class="card">
+        <h2>Результати по іграх</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th>Гра</th><th>Раундів</th><th>Поставлено</th><th>Виплачено</th><th>Дохід казино</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="g : ${stats.games}">
+                    <td th:text="${g.gameName}"></td>
+                    <td th:text="${g.rounds}"></td>
+                    <td th:text="${g.wagered}"></td>
+                    <td th:text="${g.paidOut}"></td>
+                    <td th:with="profit=${g.wagered.subtract(g.paidOut)}"
+                        th:classappend="${profit.signum() >= 0} ? 'win' : 'loss'" th:text="${profit}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <form th:action="@{/admin/house}" method="post" class="form-bar">
+            <input type="number" name="delta" step="0.01" placeholder="+10000 або -500" required>
+            <button class="btn small" type="submit">Змінити банк</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Ігри</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th>#</th><th>Назва</th><th>Тип</th><th>Ставки</th><th>Статус</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="g : ${games}">
+                    <td class="muted" th:text="${g.id}"></td>
+                    <td th:text="${g.name}"></td>
+                    <td><span class="badge neutral" th:text="${g.type}"></span></td>
+                    <td th:text="${g.minBet} + ' – ' + ${g.maxBet}"></td>
+                    <td><span class="badge" th:classappend="${g.active} ? 'win' : 'neutral'" th:text="${g.active} ? 'активна' : 'вимкнена'"></span></td>
+                    <td>
+                        <form th:action="@{/admin/games/{id}/toggle(id=${g.id})}" method="post">
+                            <button class="btn small secondary" type="submit" th:text="${g.active} ? 'Вимкнути' : 'Увімкнути'"></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <form th:action="@{/admin/games}" method="post" class="form-bar">
+            <input type="text" name="name" placeholder="Назва" required>
+            <select name="type">
+                <option th:each="t : ${gameTypes}" th:value="${t}" th:text="${t}"></option>
+            </select>
+            <input type="text" name="description" placeholder="Опис">
+            <input type="number" name="minBet" step="0.01" placeholder="Мін" required>
+            <input type="number" name="maxBet" step="0.01" placeholder="Макс" required>
+            <button class="btn small" type="submit">Додати гру</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Користувачі</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th>#</th><th>Логін</th><th>Email</th><th>Роль</th><th>Баланс</th><th>Статус</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${users}">
+                    <td class="muted" th:text="${u.id}"></td>
+                    <td th:text="${u.username}"></td>
+                    <td class="muted" th:text="${u.email}"></td>
+                    <td><span class="badge neutral" th:text="${u.role}"></span></td>
+                    <td th:text="${u.balance}"></td>
+                    <td><span class="badge" th:classappend="${u.blocked} ? 'loss' : 'neutral'" th:text="${u.blocked} ? 'заблокований' : 'активний'"></span></td>
+                    <td>
+                        <form th:unless="${u.role.name() == 'ADMIN'}" th:action="@{/admin/users/{id}/block(id=${u.id})}" method="post">
+                            <input type="hidden" name="blocked" th:value="${!u.blocked}">
+                            <button class="btn small secondary" type="submit" th:text="${u.blocked} ? 'Розблокувати' : 'Заблокувати'"></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Промокоди</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th>Код</th><th>Назва</th><th>Бонус</th><th>Діє до</th><th>Активний</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${promotions}">
+                    <td><code class="promo-code" th:text="${p.code}"></code></td>
+                    <td th:text="${p.title}"></td>
+                    <td th:text="${p.bonusAmount}"></td>
+                    <td class="muted" th:text="${p.validUntil} ? ${#temporals.format(p.validUntil, 'dd.MM.yyyy')} : 'безстроково'"></td>
+                    <td><span class="badge" th:classappend="${p.active} ? 'win' : 'neutral'" th:text="${p.active} ? 'так' : 'ні'"></span></td>
+                    <td>
+                        <form th:action="@{/admin/promotions/{id}/delete(id=${p.id})}" method="post">
+                            <button class="btn small danger" type="submit">Видалити</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <form th:action="@{/admin/promotions}" method="post" class="form-bar">
+            <input type="text" name="code" placeholder="КОД" required>
+            <input type="text" name="title" placeholder="Назва" required>
+            <input type="number" name="bonusAmount" step="0.01" placeholder="Бонус" required>
+            <input type="number" name="days" min="1" placeholder="Днів дії (необов'язково)">
+            <button class="btn small" type="submit">Створити</button>
+        </form>
+    </section>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

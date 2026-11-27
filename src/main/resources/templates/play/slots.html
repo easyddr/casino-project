@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${game.name})}"></head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="container narrow" id="game" th:data-game-id="${game.id}">
+    <a class="back-link" th:href="@{/}">← Усі ігри</a>
+    <h1 th:text="${game.name}">Slots</h1>
+    <p class="muted" th:text="${game.description}"></p>
+
+    <div class="card center">
+        <div class="reels">
+            <div class="reel">🍒</div><div class="reel">🍋</div><div class="reel">🔔</div>
+        </div>
+        <div id="message" class="message">Зробіть ставку</div>
+        <div class="bet-bar">
+            <input type="number" id="amount" th:min="${game.minBet}" th:max="${game.maxBet}" step="0.01" th:value="${game.minBet}">
+            <button id="spin" class="btn">Крутити</button>
+        </div>
+        <p class="small muted" th:text="'Ставка від ' + ${game.minBet} + ' до ' + ${game.maxBet}"></p>
+    </div>
+
+    <div class="card">
+        <h2>Таблиця виплат</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th>Комбінація</th><th>Множник</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${paytable}">
+                    <td><span class="sym" th:data-symbol="${row.symbol}" th:text="${row.symbol}"></span> × 3</td>
+                    <td><span class="badge accent" th:text="'x' + ${row.multiplier}"></span></td>
+                </tr>
+                <tr>
+                    <td>Дві вишні</td>
+                    <td><span class="badge neutral">x1.5</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/slots.js}"></script>
+</body>
+</html>
