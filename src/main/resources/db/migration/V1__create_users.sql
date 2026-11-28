@@ -1,4 +1,3 @@
--- V1__init_schema.sql  (PostgreSQL / Supabase)
 CREATE TABLE users (
                        id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                        username      VARCHAR(50)  NOT NULL UNIQUE,
@@ -32,7 +31,7 @@ CREATE TABLE bets (
                       payout     NUMERIC(14,2) NOT NULL DEFAULT 0 CHECK (payout >= 0),
                       status     VARCHAR(10)  NOT NULL DEFAULT 'PLACED'
                           CHECK (status IN ('PLACED', 'WON', 'LOST')),
-                      result     JSONB,                       -- деталі раунду: випали символи, число рулетки тощо
+                      result     JSONB,
                       created_at TIMESTAMPTZ  NOT NULL DEFAULT now(),
                       settled_at TIMESTAMPTZ
 );
@@ -40,7 +39,7 @@ CREATE TABLE bets (
 CREATE TABLE transactions (
                               id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                               user_id       BIGINT NOT NULL REFERENCES users(id),
-                              bet_id        BIGINT REFERENCES bets(id),       -- заповнено для BET / WIN
+                              bet_id        BIGINT REFERENCES bets(id),
                               type          VARCHAR(12) NOT NULL
                                   CHECK (type IN ('DEPOSIT', 'WITHDRAWAL', 'BET', 'WIN', 'BONUS')),
                               amount        NUMERIC(14,2) NOT NULL CHECK (amount > 0),
@@ -57,7 +56,6 @@ CREATE TABLE promotions (
                             is_active    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- many-to-many: користувач активував акцію (один раз)
 CREATE TABLE user_promotions (
                                  user_id      BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                                  promotion_id BIGINT NOT NULL REFERENCES promotions(id) ON DELETE CASCADE,

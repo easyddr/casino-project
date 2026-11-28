@@ -1,6 +1,3 @@
--- V2: крипто-гра, псевдо-платежі, банк казино та стартові дані.
--- V1 не чіпаємо, бо на Supabase вона вже могла бути застосована.
-
 ALTER TABLE games DROP CONSTRAINT IF EXISTS games_type_check;
 ALTER TABLE games ADD CONSTRAINT games_type_check
     CHECK (type IN ('SLOTS', 'ROULETTE', 'BLACKJACK', 'DICE', 'CRYPTO'));
@@ -13,8 +10,6 @@ ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_type_check;
 ALTER TABLE transactions ADD CONSTRAINT transactions_type_check
     CHECK (type IN ('DEPOSIT', 'WITHDRAWAL', 'BET', 'WIN', 'BONUS', 'REFUND'));
 
--- Платежі через фейковий шлюз. Номер картки зберігається тільки зашифрованим (AES-GCM),
--- CVV не зберігається взагалі.
 CREATE TABLE payments (
                           id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                           user_id        BIGINT NOT NULL REFERENCES users(id),
@@ -30,7 +25,6 @@ CREATE TABLE payments (
 );
 CREATE INDEX idx_payments_user_created ON payments(user_id, created_at DESC);
 
--- Один рядок з грошима казино. З нього рахується максимально можливий виграш.
 CREATE TABLE house_bank (
                             id         SMALLINT PRIMARY KEY CHECK (id = 1),
                             balance    NUMERIC(16,2) NOT NULL CHECK (balance >= 0),
